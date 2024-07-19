@@ -54,7 +54,7 @@ To assist with the fix process, we have provided two scripts:
 1. **Batch Script**: [README for CrowdStrike Fix Batch Script](https://github.com/jrobinfo/crowdstrike_fix_7-19-24/blob/main/README_for_CrowdStrike_Fix_Batch_Script.md)
    - This script is designed for Windows environments and can be run directly from the command prompt.
 
-2. **PowerShell Script**: [README for CrowdStrike Fix PowerShell Script](https://claude.ai/chat/a5694ce8-b157-45d1-9262-2cdf830a68e8)
+2. **PowerShell Script**: [README for CrowdStrike Fix PowerShell Script](https://github.com/jrobinfo/crowdstrike_fix_7-19-24/blob/main/README_for_CrowdStrike_Fix_PowerShell_Script.md)
    - This script offers more advanced features and logging capabilities, suitable for environments where PowerShell is preferred.
 
 Please refer to the individual README files for each script for detailed usage instructions, requirements, and important considerations.
