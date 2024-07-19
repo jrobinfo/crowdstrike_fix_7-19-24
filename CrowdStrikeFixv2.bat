@@ -6,14 +6,14 @@ set "LogFile=%temp%\CrowdStrikeFixLog.txt"
 echo %date% %time% - Script started > %LogFile%
 
 :: Check for admin privileges
-NET SESSION >nul 2>&1
-if %errorLevel% neq 0 (
-    echo This script requires administrator privileges.
-    echo Please right-click on the script and select "Run as administrator".
-    echo %date% %time% - Script exited: No admin privileges >> %LogFile%
-    pause
-    exit /b 1
-)
+@REM NET SESSION >nul 2>&1
+@REM if %errorLevel% neq 0 (
+@REM     echo This script requires administrator privileges.
+@REM     echo Please right-click on the script and select "Run as administrator".
+@REM     echo %date% %time% - Script exited: No admin privileges >> %LogFile%
+@REM     pause
+@REM     exit /b 1
+@REM )
 
 :: Detect Safe Mode
 set "SafeMode="
