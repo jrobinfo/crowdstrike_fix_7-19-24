@@ -9,7 +9,7 @@ function Write-Log {
     )
     $logMessage = "$(Get-Date -Format 'yyyy-MM-dd HH:mm:ss') [$Level] $Message"
     Add-Content -Path "$env:TEMP\CrowdStrikeFixLog.txt" -Value $logMessage
-    if ($Verbose) {
+    if ($VerbosePreference -eq 'Continue') {
         Write-Host $logMessage
     }
 }
@@ -74,34 +74,36 @@ try {
     }
 
     $filePath = "$env:windir\System32\drivers\CrowdStrike\C-00000291*.sys"
-    $file = Get-Item $filePath -ErrorAction SilentlyContinue
+    $files = Get-Item $filePath -ErrorAction SilentlyContinue
 
-    if ($null -eq $file) {
+    if ($null -eq $files -or $files.Count -eq 0) {
         Write-Host "The CrowdStrike Falcon Sensor file was not found. This system may not be affected." -ForegroundColor Green
         Write-Log "CrowdStrike file not found."
         Exit
     }
 
-    $fileTimestamp = $file.CreationTime.ToUniversalTime()
-    $criticalTimestamp = [DateTime]::ParseExact("2024-07-19 04:09:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
-    $fixedTimestamp = [DateTime]::ParseExact("2024-07-19 05:27:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
+    foreach ($file in $files) {
+        $fileTimestamp = $file.CreationTime.ToUniversalTime()
+        $criticalTimestamp = [DateTime]::ParseExact("2024-07-19 04:09:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
+        $fixedTimestamp = [DateTime]::ParseExact("2024-07-19 05:27:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
 
-    Write-Host "File found: $($file.Name)"
-    Write-Host "File timestamp (UTC): $($fileTimestamp.ToString("yyyy-MM-dd HH:mm:ss"))"
-    Write-Log "File found: $($file.Name), Timestamp: $($fileTimestamp.ToString("yyyy-MM-dd HH:mm:ss"))"
+        Write-Host "File found: $($file.Name)"
+        Write-Host "File timestamp (UTC): $($fileTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
+        Write-Log "File found: $($file.Name), Timestamp: $($fileTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
 
-    if ($fileTimestamp -eq $criticalTimestamp) {
-        Write-Host "WARNING: This file matches the timestamp of the problematic version." -ForegroundColor Red
-        Write-Log "Problematic file version detected."
-        Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
-    } elseif ($fileTimestamp -ge $fixedTimestamp) {
-        Write-Host "Good news! The file on this system appears to be the fixed version." -ForegroundColor Green
-        Write-Host "No action is required."
-        Write-Log "Fixed version detected, no action taken."
-    } else {
-        Write-Host "The file timestamp does not match known problematic or fixed versions." -ForegroundColor Yellow
-        Write-Host "Please consult with your IT department for further guidance."
-        Write-Log "Unknown file version detected."
+        if ($fileTimestamp -eq $criticalTimestamp) {
+            Write-Host "WARNING: This file matches the timestamp of the problematic version." -ForegroundColor Red
+            Write-Log "Problematic file version detected."
+            Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
+        } elseif ($fileTimestamp -ge $fixedTimestamp) {
+            Write-Host "Good news! The file on this system appears to be the fixed version." -ForegroundColor Green
+            Write-Host "No action is required."
+            Write-Log "Fixed version detected, no action taken."
+        } else {
+            Write-Host "The file timestamp does not match known problematic or fixed versions." -ForegroundColor Yellow
+            Write-Host "Please consult with your IT department for further guidance."
+            Write-Log "Unknown file version detected."
+        }
     }
 
     Write-Host "Script execution complete. Press any key to exit."
