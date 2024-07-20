@@ -2,13 +2,13 @@
 setlocal enabledelayedexpansion
 
 :: Check for admin privileges
-net session >nul 2>&1
-if %errorLevel% neq 0 (
-    echo This script requires administrator privileges.
-    echo Please right-click on the script and select "Run as administrator".
-    pause
-    exit /b 1
-)
+@REM net session >nul 2>&1
+@REM if %errorLevel% neq 0 (
+@REM     echo This script requires administrator privileges.
+@REM     echo Please right-click on the script and select "Run as administrator".
+@REM     pause
+@REM     exit /b 1
+@REM )
 
 :: Set up logging
 set "LOGFILE=%TEMP%\CrowdStrikeFixLog.txt"
