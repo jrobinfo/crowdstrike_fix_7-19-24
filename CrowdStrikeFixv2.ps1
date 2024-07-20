@@ -92,17 +92,17 @@ try {
         Write-Log "File found: $($file.Name), Timestamp: $($fileTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
 
         if ($fileTimestamp -eq $criticalTimestamp) {
-            Write-Host "WARNING: This file matches the timestamp of the problematic version." -ForegroundColor Red
+            Write-Host "WARNING: This file exactly matches the timestamp of the known problematic version." -ForegroundColor Red
             Write-Log "Problematic file version detected."
             Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
-        } elseif ($fileTimestamp -ge $fixedTimestamp) {
-            Write-Host "Good news! The file on this system appears to be the fixed version." -ForegroundColor Green
-            Write-Host "No action is required."
-            Write-Log "Fixed version detected, no action taken."
+        } elseif ($fileTimestamp -lt $fixedTimestamp) {
+            Write-Host "WARNING: This file was created before the fixed version and needs to be deleted." -ForegroundColor Red
+            Write-Log "Pre-fix version detected, needs deletion."
+            Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
         } else {
-            Write-Host "The file timestamp does not match known problematic or fixed versions." -ForegroundColor Yellow
-            Write-Host "Please consult with your IT department for further guidance."
-            Write-Log "Unknown file version detected."
+            Write-Host "Good news! This file was created after the fixed version was released (${fixedTimestamp})." -ForegroundColor Green
+            Write-Host "No action is required for this file."
+            Write-Log "Post-fix version detected, no action needed."
         }
     }
 
