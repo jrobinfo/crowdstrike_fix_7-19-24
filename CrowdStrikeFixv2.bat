@@ -30,25 +30,35 @@ if not exist "%FilePath%" (
     exit /b 0
 )
 
-:: Get file creation time in UTC
-for /f "tokens=2 delims==" %%a in ('wmic datafile where name^="%FilePath:\=\\%" get CreationDate /value') do set "FileDate=%%a"
-set "FileYear=%FileDate:~0,4%"
-set "FileMonth=%FileDate:~4,2%"
-set "FileDay=%FileDate:~6,2%"
-set "FileHour=%FileDate:~8,2%"
-set "FileMinute=%FileDate:~10,2%"
+:: Get file creation time
+for /f "tokens=1-5 delims=/ " %%a in ('dir "%FilePath%" /tc ^| findstr /i /v "volume" ^| findstr /i /v "directory" ^| findstr /i /v "file(s)"') do (
+    set "FileDate=%%a"
+    set "FileTime=%%c"
+    set "FileAMPM=%%d"
+)
 
 echo File found: %FilePath%
-echo File creation date (UTC): %FileYear%-%FileMonth%-%FileDay% %FileHour%:%FileMinute%
+echo File creation date: %FileDate% %FileTime% %FileAMPM%
 
-set "ProblematicTimestamp=2024-07-19 04:09"
-set "FixedTimestamp=2024-07-19 05:27"
+:: Convert to 24-hour format if needed
+if /i "%FileAMPM%"=="PM" (
+    for /f "tokens=1,2 delims=:" %%a in ("%FileTime%") do (
+        set /a "Hour=%%a"
+        if !Hour! neq 12 set /a "Hour+=12"
+        set "FileTime=!Hour!:%%b"
+    )
+)
 
-set "FileTimestamp=%FileYear%-%FileMonth%-%FileDay% %FileHour%:%FileMinute%"
+:: Remove leading zero from hour if present
+set "FileTime=%FileTime: 0=%"
 
-if "%FileTimestamp%" lss "%ProblematicTimestamp%" (
+:: Set comparison timestamps
+set "ProblematicTimestamp=07/19/2024 4:09"
+set "FixedTimestamp=07/19/2024 5:27"
+
+if "%FileDate% %FileTime%" lss "%ProblematicTimestamp%" (
     echo This file predates the problematic version. No action needed.
-) else if "%FileTimestamp%" geq "%FixedTimestamp%" (
+) else if "%FileDate% %FileTime%" geq "%FixedTimestamp%" (
     echo Good news! The file on this system appears to be the fixed version.
     echo No action is required.
 ) else (
