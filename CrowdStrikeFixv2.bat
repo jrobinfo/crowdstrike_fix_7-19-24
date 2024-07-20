@@ -30,29 +30,25 @@ if not exist "%FilePath%" (
     exit /b 0
 )
 
-:: Get file creation time
-for %%F in ("%FilePath%") do set "FileName=%%~nxF"
-for /f "tokens=1-6 delims=/ " %%a in ('dir "%FilePath%" /tc ^| findstr /i /v "volume" ^| findstr /i /v "directory" ^| findstr /i /v "file(s)"') do (
-    set "FileDate=%%a"
-    set "FileTime=%%c"
-)
+:: Get file creation time in UTC
+for /f "tokens=2 delims==" %%a in ('wmic datafile where name^="%FilePath:\=\\%" get CreationDate /value') do set "FileDate=%%a"
+set "FileYear=%FileDate:~0,4%"
+set "FileMonth=%FileDate:~4,2%"
+set "FileDay=%FileDate:~6,2%"
+set "FileHour=%FileDate:~8,2%"
+set "FileMinute=%FileDate:~10,2%"
 
-echo File found: %FileName%
-echo File creation date (local time): %FileDate% %FileTime%
+echo File found: %FilePath%
+echo File creation date (UTC): %FileYear%-%FileMonth%-%FileDay% %FileHour%:%FileMinute%
 
-:: Convert local time to UTC (assuming your system is set to your local time zone)
-for /f "tokens=2 delims=:" %%a in ('tzutil /g') do set "TZOffset=%%a"
-set /a "UTCHour=(1%FileTime:~0,2%-100-%TZOffset:~0,3%+24)%%24"
-set "UTCTime=%UTCHour%%FileTime:~2%"
+set "ProblematicTimestamp=2024-07-19 04:09"
+set "FixedTimestamp=2024-07-19 05:27"
 
-echo File creation date (UTC): %FileDate% %UTCTime%
+set "FileTimestamp=%FileYear%-%FileMonth%-%FileDay% %FileHour%:%FileMinute%"
 
-set "ProblematicTimestamp=07/19/2024 04:09"
-set "FixedTimestamp=07/19/2024 05:27"
-
-if "%FileDate% %UTCTime%" lss "%ProblematicTimestamp%" (
+if "%FileTimestamp%" lss "%ProblematicTimestamp%" (
     echo This file predates the problematic version. No action needed.
-) else if "%FileDate% %UTCTime%" geq "%FixedTimestamp%" (
+) else if "%FileTimestamp%" geq "%FixedTimestamp%" (
     echo Good news! The file on this system appears to be the fixed version.
     echo No action is required.
 ) else (
