@@ -1,6 +1,9 @@
 [CmdletBinding()]
 param()
 
+# Calculate UTC offset
+$utcOffset = (Get-TimeZone).BaseUtcOffset
+
 # Function to write log messages
 function Write-Log {
     param(
@@ -85,24 +88,26 @@ try {
     foreach ($file in $files) {
         $fileTimestamp = $file.CreationTime.ToUniversalTime()
         $criticalTimestamp = [DateTime]::ParseExact("2024-07-19 04:09:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
-        $fixedTimestamp = [DateTime]::ParseExact("2024-07-19 05:27:00", "yyyy-MM-dd HH:mm:ss", $null).ToUniversalTime()
+        $fixedTimestamp = [DateTime]::ParseExact("2024-07-19 05:27:00", "yyyy-MM-dd HH:mm:ss", $null).Add($utcOffset).ToUniversalTime()
+        $bufferTime = [TimeSpan]::FromMinutes(5)
 
         Write-Host "File found: $($file.Name)"
         Write-Host "File timestamp (UTC): $($fileTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
+        Write-Host "Fixed version timestamp (UTC): $($fixedTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
         Write-Log "File found: $($file.Name), Timestamp: $($fileTimestamp.ToString('yyyy-MM-dd HH:mm:ss'))"
 
         if ($fileTimestamp -eq $criticalTimestamp) {
             Write-Host "WARNING: This file exactly matches the timestamp of the known problematic version." -ForegroundColor Red
             Write-Log "Problematic file version detected."
             Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
-        } elseif ($fileTimestamp -lt $fixedTimestamp) {
+        } elseif ($fileTimestamp -lt ($fixedTimestamp - $bufferTime)) {
             Write-Host "WARNING: This file was created before the fixed version and needs to be deleted." -ForegroundColor Red
             Write-Log "Pre-fix version detected, needs deletion."
             Remove-ProblematicFile -FilePath $file.FullName -InSafeMode $inSafeMode
         } else {
-            Write-Host "Good news! This file was created after the fixed version was released (${fixedTimestamp})." -ForegroundColor Green
+            Write-Host "Good news! This file was created after or very close to when the fixed version was released." -ForegroundColor Green
             Write-Host "No action is required for this file."
-            Write-Log "Post-fix version detected, no action needed."
+            Write-Log "Post-fix or close to fix version detected, no action needed."
         }
     }
 
