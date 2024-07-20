@@ -1,5 +1,5 @@
 [CmdletBinding()]
-param(
+param()
     [switch]$Verbose
 )
 
