@@ -1,7 +1,5 @@
 [CmdletBinding()]
 param()
-    [switch]$Verbose
-)
 
 # Function to write log messages
 function Write-Log {
