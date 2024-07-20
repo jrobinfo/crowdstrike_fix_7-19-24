@@ -19,7 +19,7 @@ if "%SafeMode%"=="1" (
 set "FilePath=%windir%\System32\drivers\CrowdStrike\C-00000291*.sys"
 
 :: Check if any matching files exist
-if not exist "%FilePath%" (
+if not exist %FilePath% (
     echo The CrowdStrike Falcon Sensor file was not found. This system may not be affected.
     echo %DATE% %TIME% - CrowdStrike file not found. >> "%LOGFILE%"
     pause
@@ -76,6 +76,7 @@ exit /b 0
 
 :: File removal function
 :REMOVE_FILE
+setlocal
 set /p "Confirmation=Do you want to delete this file? (Y/N): "
 if /i "%Confirmation%"=="Y" (
     del "%~1" 2>nul
@@ -104,4 +105,5 @@ if /i "%Confirmation%"=="Y" (
     echo File was not deleted. Please note that your system may still be affected.
     echo %DATE% %TIME% - User chose not to delete problematic file. >> "%LOGFILE%"
 )
+endlocal
 exit /b 0
