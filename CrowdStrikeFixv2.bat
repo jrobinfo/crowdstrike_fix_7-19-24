@@ -31,7 +31,7 @@ set "CriticalTimestamp=20240719041000"
 set "FixedTimestamp=20240719052700"
 
 :: Process each matching file
-for %%F in ("%FilePath%") do (
+for %%F in (%FilePath%) do (
     echo File found: %%~nxF
     echo %DATE% %TIME% - File found: %%~nxF >> "%LOGFILE%"
 
