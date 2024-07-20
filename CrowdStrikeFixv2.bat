@@ -1,26 +1,14 @@
 @echo off
 setlocal enabledelayedexpansion
 
-:: Check for admin privileges
-@REM net session >nul 2>&1
-@REM if %errorLevel% neq 0 (
-@REM     echo This script requires administrator privileges.
-@REM     echo Please right-click on the script and select "Run as administrator".
-@REM     pause
-@REM     exit /b 1
-@REM )
-
 :: Set up logging
 set "LOGFILE=%TEMP%\CrowdStrikeFixLog.txt"
 call :LOG "Script started."
 
 :: Detect Safe Mode
-set "SafeMode="
-for /f "tokens=2 delims=:" %%a in ('systeminfo ^| findstr /C:"Boot Mode"') do set "BootMode=%%a"
-if "!BootMode!"==" Normal boot" (
-    set "SafeMode=0"
-) else (
-    set "SafeMode=1"
+set "SafeMode=0"
+systeminfo | findstr /B /C:"Boot Mode" | findstr /C:"Safe Mode" >nul && set "SafeMode=1"
+if "%SafeMode%"=="1" (
     echo Running in Safe Mode. Proceeding with caution.
     call :LOG "Running in Safe Mode."
 )
@@ -29,8 +17,7 @@ if "!BootMode!"==" Normal boot" (
 set "FilePath=%windir%\System32\drivers\CrowdStrike\C-00000291*.sys"
 
 :: Check if any matching files exist
-forfiles /P "%windir%\System32\drivers\CrowdStrike" /M "C-00000291*.sys" /C "cmd /c exit 0" >nul 2>&1
-if %errorlevel% neq 0 (
+dir /b /a-d "%FilePath%" >nul 2>&1 || (
     echo The CrowdStrike Falcon Sensor file was not found. This system may not be affected.
     call :LOG "CrowdStrike file not found."
     pause
@@ -38,13 +25,19 @@ if %errorlevel% neq 0 (
 )
 
 :: Process each matching file
-for /f "delims=" %%F in ('dir /b /a-d "%FilePath%"') do (
-    set "FullPath=%windir%\System32\drivers\CrowdStrike\%%F"
-    echo File found: %%F
-    call :LOG "File found: %%F"
+for %%F in ("%FilePath%") do (
+    set "FullPath=%%~fF"
+    echo File found: %%~nxF
+    call :LOG "File found: %%~nxF"
 
     :: Get file creation time in UTC
-    for /f "tokens=2 delims==." %%a in ('wmic datafile where name^="%FullPath:\=\\%" get CreationDate /value') do set "FileTimestamp=%%a"
+    for /f "tokens=2 delims==." %%a in ('wmic datafile where name^="!FullPath:\=\\!" get CreationDate /value') do set "FileTimestamp=%%a"
+    if not defined FileTimestamp (
+        echo Error: Unable to get file timestamp.
+        call :LOG "Error: Unable to get file timestamp for %%~nxF"
+        goto :NEXT_FILE
+    )
+    
     set "FileYear=!FileTimestamp:~0,4!"
     set "FileMonth=!FileTimestamp:~4,2!"
     set "FileDay=!FileTimestamp:~6,2!"
@@ -72,6 +65,8 @@ for /f "delims=" %%F in ('dir /b /a-d "%FilePath%"') do (
         echo No action is required for this file.
         call :LOG "Post-fix or close to fix version detected, no action needed."
     )
+    
+    :NEXT_FILE
 )
 
 echo Script execution complete. Press any key to exit.
