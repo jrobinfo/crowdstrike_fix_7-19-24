@@ -33,9 +33,14 @@ Key features:
    ```
    .\CrowdStrikeFixv2.ps1 -Verbose
    ```
-5. Follow the on-screen prompts.
-6. If prompted to delete a file, carefully consider the action before confirming.
-7. Reboot the system when instructed, either through the script or manually.
+5. If your system's execution policy is restricted, you can temporarily set it to Unrestricted by running the following command in PowerShell as an administrator:
+   ```
+   Set-ExecutionPolicy Unrestricted -Scope Process
+   ```
+   This change only applies to the current PowerShell session. After running the script, you can close the PowerShell window to revert to the previous policy.
+6. Follow the on-screen prompts.
+7. If prompted to delete a file, carefully consider the action before confirming.
+8. Reboot the system when instructed, either through the script or manually.
 
 ## Requirements
 
