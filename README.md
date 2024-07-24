@@ -49,15 +49,12 @@ On July 19, 2024, a problematic update to the CrowdStrike Falcon Sensor caused W
 
 ## Available Scripts
 
-To assist with the fix process, we have provided two scripts:
+To assist with the fix process, we have provided a PowerShell script:
 
-1. **Batch Script**: [README for CrowdStrike Fix Batch Script](https://github.com/jrobinfo/crowdstrike_fix_7-19-24/blob/main/README_for_CrowdStrike_Fix_Batch_Script.md)
-   - This script is designed for Windows environments and can be run directly from the command prompt.
-
-2. **PowerShell Script**: [README for CrowdStrike Fix PowerShell Script](https://github.com/jrobinfo/crowdstrike_fix_7-19-24/blob/main/README_for_CrowdStrike_Fix_PowerShell_Script.md)
+1. **PowerShell Script**: [README for CrowdStrike Fix PowerShell Script](https://github.com/jrobinfo/crowdstrike_fix_7-19-24/blob/main/README_for_CrowdStrike_Fix_PowerShell_Script.md)
    - This script offers more advanced features and logging capabilities, suitable for environments where PowerShell is preferred.
 
-Please refer to the individual README files for each script for detailed usage instructions, requirements, and important considerations.
+Please refer to the README file for the script for detailed usage instructions, requirements, and important considerations.
 
 ## Considerations for Different Environments
 
